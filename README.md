@@ -104,7 +104,7 @@ The project trained one model for each modality and then combined their class-le
                         │
                         ├───────────────┐
                         │               │
-UniProt Annotation     │               │       AlphaFold Structure
+UniProt Annotation      │               │       AlphaFold Structure
         │               │               │               │
         ▼               │               │               ▼
      BioBERT            │               │          ProteinMPNN
