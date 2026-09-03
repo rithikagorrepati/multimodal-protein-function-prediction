@@ -13,7 +13,7 @@ Protein function can be represented through several complementary sources of inf
 - An amino-acid **sequence** contains biochemical and evolutionary information.
 - A protein's **3D structure** captures spatial relationships relevant to molecular function.
 - A functional **annotation** contains biomedical and biological context.
-
+  
 The central question of this project was:
 
 > **Can combining sequence, structure, and annotation information improve protein-function prediction compared with using any single modality alone?**
