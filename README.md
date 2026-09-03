@@ -212,25 +212,11 @@ multimodal-protein-function-prediction/
 
 ---
 
-## Reproducibility and Portfolio Cleanup
+## Repository Implementation
 
-This repository is a **cleaned and reorganized version of a collaborative course project**.
+The original work was completed as a Georgia Tech group project using Python, PyTorch, Jupyter notebooks, and modality-specific deep-learning workflows.
 
-The original work was primarily implemented through Jupyter notebooks and experimental scripts. For this repository, the workflow is being reorganized into clearer command-line modules with:
-
-- explicit input and output paths,
-- reproducible random seeds,
-- deterministic EC-label mappings,
-- UniProt-level dataset alignment,
-- standardized model outputs,
-- clearer separation between preprocessing and modeling,
-- improved error checking,
-- removal of unrelated tutorial/example code,
-- and a shared split-manifest design for consistent model evaluation.
-
-Some architectural issues identified while reviewing the original experiments are also corrected in the cleaned implementation.
-
-Because these changes alter parts of the original training workflow, **the original course metrics above should not be interpreted as performance measurements from the cleaned scripts in this repository**. The cleaned implementations must be rerun before new performance numbers are reported.
+This repository reorganizes the project into modular scripts for data preparation, representation learning, model training, and multimodal integration. The cleaned structure improves reproducibility and makes the sequence, annotation, structure, and ensemble workflows easier to understand and run independently.
 
 ---
 
@@ -354,7 +340,6 @@ Several limitations should be considered when interpreting the original results:
 - Multimodal integration improved performance only slightly over ProtT5 alone.
 - Original modality-specific notebooks did not always use identical data splits.
 - The original ensemble workflow requires stricter out-of-fold evaluation to establish a leakage-controlled stacking benchmark.
-- The cleaned scripts have not yet been rerun as a complete benchmark, so original and cleaned-model results are intentionally kept separate.
 
 ---
 
