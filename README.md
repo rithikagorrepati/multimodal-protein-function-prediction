@@ -10,9 +10,9 @@ This project compares three protein representations — **amino-acid sequence, U
 
 Protein function can be represented through several complementary sources of information:
 
-- an amino-acid **sequence** contains biochemical and evolutionary information,
-- a protein's **3D structure** captures spatial relationships relevant to molecular function,
-- and a functional **annotation** contains biomedical and biological context.
+- An amino-acid **sequence** contains biochemical and evolutionary information.
+- A protein's **3D structure** captures spatial relationships relevant to molecular function.
+- A functional **annotation** contains biomedical and biological context.
 
 The central question of this project was:
 
