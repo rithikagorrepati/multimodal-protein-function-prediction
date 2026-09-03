@@ -1,0 +1,22 @@
+name: multimodal-protein-function
+
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+
+dependencies:
+  - python=3.10
+  - pip
+  - numpy=1.26
+  - pandas=2.1
+  - scikit-learn=1.3
+  - requests=2.31
+  - sentencepiece=0.1.99
+  - pytorch=2.1
+
+  - pip:
+      - transformers==4.38.2
+      - datasets==2.18.0
+      - peft==0.9.0
+      - accelerate==0.28.0
