@@ -248,16 +248,13 @@ This helps prevent a protein from being treated as training data in one modality
 
 ## Leakage-Aware Multimodal Evaluation
 
-Another important consideration is stacked-model evaluation.
+The cleaned workflow keeps the shared test partition untouched until final evaluation.
 
-If the ensemble is trained using predictions from a base model on samples that the base model itself saw during training, the ensemble can receive overly optimistic features.
+The sequence, annotation, and structure models are trained using the shared training split and generate predictions for the shared validation and test proteins. The aligned validation-set predictions from the three base models are then used as the ensemble development set and divided into ensemble-training and ensemble-validation subsets.
 
-A strict multimodal stacking workflow should therefore use:
+The final multimodal model is evaluated only on aligned proteins from the held-out test partition.
 
-- **out-of-fold predictions for ensemble training**, and
-- predictions from untouched validation/test proteins for final evaluation.
-
-The cleaned repository is being structured around this more rigorous evaluation framework rather than reproducing leakage-prone behavior from the original experimental notebooks.
+This is more conservative than training the ensemble on predictions from proteins used to fit the base models. A full out-of-fold stacking design would provide an additional level of separation and remains a possible future improvement.
 
 ---
 
