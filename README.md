@@ -68,7 +68,7 @@ sentence embedding
    RNN classifier
         ↓
     EC prediction
-
+```
 ### Structure
 
 AlphaFold-predicted PDB structures were processed through ProteinMPNN to obtain numerical structural representations.
