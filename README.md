@@ -54,19 +54,20 @@ UniProt FASTA
 
 ### Functional Annotation
 
-Protein descriptions and functional annotations from UniProt were represented using BioBERT.
+Protein descriptions and functional annotations from UniProt were represented using **BioBERT**.
+
+During the original Georgia Tech group project, **Rithika Gorrepati developed and evaluated BioBERT-based MLP/CNN approaches for EC prediction**. The final team workflow used for the multimodal comparison employed a **BioBERT-based RNN classifier**, which is the annotation architecture represented in the reorganized pipeline in this repository.
 
 ```text
 UniProt annotation
         ↓
-     BioBERT
+      BioBERT
         ↓
 sentence embedding
         ↓
- annotation classifier
+   RNN classifier
         ↓
     EC prediction
-```
 
 ### Structure
 
