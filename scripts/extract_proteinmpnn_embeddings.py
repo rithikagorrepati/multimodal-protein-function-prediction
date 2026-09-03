@@ -1,12 +1,7 @@
 """Extract per-residue ProteinMPNN representations from AlphaFold PDB files.
 
-This script mirrors the structural-embedding step used in the original project:
-
-AlphaFold PDB -> ProteinMPNN -> hidden structural representation
-
-ProteinMPNN is an external dependency and is not included in this repository.
-Clone the official ProteinMPNN repository separately and provide its path with
---proteinmpnn-dir.
+ProteinMPNN is an external dependency. Clone the official ProteinMPNN
+repository separately and provide its root directory with --proteinmpnn-dir.
 
 Example
 -------
@@ -44,10 +39,11 @@ def infer_uniprot_id(
         pdb_path.name
     )
 
-    if match:
-        return match.group(1)
-
-    return pdb_path.stem
+    return (
+        match.group(1)
+        if match
+        else pdb_path.stem
+    )
 
 
 def load_proteinmpnn(
@@ -62,10 +58,10 @@ def load_proteinmpnn(
 
     if not utils_path.exists():
         raise FileNotFoundError(
-            "protein_mpnn_utils.py was not found in "
+            f"protein_mpnn_utils.py was not found in "
             f"{proteinmpnn_dir}. Clone the official "
-            "ProteinMPNN repository and provide its "
-            "root directory with --proteinmpnn-dir."
+            "ProteinMPNN repository and pass its root "
+            "directory with --proteinmpnn-dir."
         )
 
     sys.path.insert(
@@ -94,24 +90,21 @@ def build_model(
     device: torch.device,
     ca_only: bool,
 ):
-    """Load the pretrained ProteinMPNN model."""
+    """Load a pretrained ProteinMPNN model."""
 
     checkpoint = torch.load(
         weights_path,
         map_location=device,
     )
 
-    hidden_dim = 128
-    num_layers = 3
-
     model = ProteinMPNN(
         ca_only=ca_only,
         num_letters=21,
-        node_features=hidden_dim,
-        edge_features=hidden_dim,
-        hidden_dim=hidden_dim,
-        num_encoder_layers=num_layers,
-        num_decoder_layers=num_layers,
+        node_features=128,
+        edge_features=128,
+        hidden_dim=128,
+        num_encoder_layers=3,
+        num_decoder_layers=3,
         augment_eps=0.0,
         k_neighbors=checkpoint[
             "num_edges"
@@ -124,7 +117,10 @@ def build_model(
         ]
     )
 
-    model.to(device)
+    model.to(
+        device
+    )
+
     model.eval()
 
     return model
@@ -138,10 +134,12 @@ def extract_one_structure(
     device: torch.device,
     ca_only: bool,
 ) -> np.ndarray:
-    """Extract a ProteinMPNN encoder representation."""
+    """Extract the first ProteinMPNN encoder-layer representation."""
 
     parsed = parse_PDB(
-        str(pdb_path),
+        str(
+            pdb_path
+        ),
         ca_only=ca_only,
     )
 
@@ -151,10 +149,10 @@ def extract_one_structure(
             f"{pdb_path}"
         )
 
-    protein = parsed[0]
-
     batch_clones = [
-        copy.deepcopy(protein)
+        copy.deepcopy(
+            parsed[0]
+        )
     ]
 
     captured: dict[
@@ -162,22 +160,20 @@ def extract_one_structure(
         torch.Tensor,
     ] = {}
 
-    def hook(
+    def capture_encoder_output(
         _module,
         _inputs,
         output,
-    ):
-        # Encoder layers return
-        # (node_features, edge_features).
-        if isinstance(
-            output,
-            (tuple, list),
-        ):
-            node_features = (
-                output[0]
+    ) -> None:
+
+        node_features = (
+            output[0]
+            if isinstance(
+                output,
+                (tuple, list),
             )
-        else:
-            node_features = output
+            else output
+        )
 
         captured[
             "node_features"
@@ -191,7 +187,7 @@ def extract_one_structure(
         model
         .encoder_layers[0]
         .register_forward_hook(
-            hook
+            capture_encoder_output
         )
     )
 
@@ -222,6 +218,7 @@ def extract_one_structure(
             batch_clones,
             device,
             None,
+            ca_only=ca_only,
         )
 
         random_noise = torch.randn(
@@ -250,23 +247,30 @@ def extract_one_structure(
         "node_features"
         not in captured
     ):
+
         raise RuntimeError(
-            "No encoder representation "
-            f"was captured for {pdb_path}"
+            "No ProteinMPNN encoder "
+            "representation was captured "
+            f"for {pdb_path}"
         )
 
-    representation = captured[
-        "node_features"
-    ]
-
-    # Batch size is one.
-    # Final shape:
-    # [number_of_residues, 128]
     representation = (
-        representation[0]
+        captured[
+            "node_features"
+        ][0]
         .numpy()
-        .astype(np.float32)
+        .astype(
+            np.float32
+        )
     )
+
+    if representation.ndim != 2:
+
+        raise RuntimeError(
+            f"Unexpected embedding shape "
+            f"for {pdb_path}: "
+            f"{representation.shape}"
+        )
 
     return representation
 
@@ -275,9 +279,8 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(
         description=(
-            "Extract ProteinMPNN "
-            "representations from "
-            "AlphaFold PDB files."
+            "Extract ProteinMPNN representations "
+            "from AlphaFold PDB files."
         )
     )
 
@@ -296,8 +299,8 @@ def main() -> None:
         type=Path,
         required=True,
         help=(
-            "Root directory of an "
-            "external ProteinMPNN clone."
+            "Root directory of an external "
+            "ProteinMPNN clone."
         ),
     )
 
@@ -306,10 +309,8 @@ def main() -> None:
         type=Path,
         required=True,
         help=(
-            "ProteinMPNN checkpoint, "
-            "for example "
-            "vanilla_model_weights/"
-            "v_48_020.pt."
+            "ProteinMPNN checkpoint, for example "
+            "vanilla_model_weights/v_48_020.pt."
         ),
     )
 
@@ -317,14 +318,18 @@ def main() -> None:
         "--output-dir",
         type=Path,
         default=Path(
-            "data/"
-            "structure_embeddings"
+            "data/structure_embeddings"
         ),
     )
 
     parser.add_argument(
         "--ca-only",
         action="store_true",
+        help=(
+            "Use ProteinMPNN's CA-only mode. "
+            "When enabled, provide a compatible "
+            "CA-only checkpoint."
+        ),
     )
 
     parser.add_argument(
@@ -369,8 +374,7 @@ def main() -> None:
     if not args.weights.exists():
 
         raise FileNotFoundError(
-            "ProteinMPNN weights "
-            "do not exist: "
+            "ProteinMPNN weights do not exist: "
             f"{args.weights}"
         )
 
@@ -401,10 +405,10 @@ def main() -> None:
     )
 
     model = build_model(
-        ProteinMPNN,
-        args.weights,
-        device,
-        args.ca_only,
+        ProteinMPNN=ProteinMPNN,
+        weights_path=args.weights,
+        device=device,
+        ca_only=args.ca_only,
     )
 
     print(
@@ -417,15 +421,26 @@ def main() -> None:
     )
 
     successful = 0
-    failed = []
 
-    for index, pdb_path in enumerate(
+    failed: list[
+        tuple[
+            str,
+            str,
+        ]
+    ] = []
+
+    for (
+        index,
+        pdb_path,
+    ) in enumerate(
         pdb_files,
         start=1,
     ):
 
-        uniprot_id = infer_uniprot_id(
-            pdb_path
+        uniprot_id = (
+            infer_uniprot_id(
+                pdb_path
+            )
         )
 
         output_path = (
@@ -443,7 +458,9 @@ def main() -> None:
                     pdb_path=pdb_path,
                     model=model,
                     parse_PDB=parse_PDB,
-                    tied_featurize=tied_featurize,
+                    tied_featurize=(
+                        tied_featurize
+                    ),
                     device=device,
                     ca_only=args.ca_only,
                 )
@@ -485,11 +502,13 @@ def main() -> None:
     )
 
     print(
-        f"Successful: {successful}"
+        f"Successful: "
+        f"{successful}"
     )
 
     print(
-        f"Failed: {len(failed)}"
+        f"Failed: "
+        f"{len(failed)}"
     )
 
     if failed:
@@ -513,9 +532,21 @@ def main() -> None:
                 error,
             ) in failed:
 
+                clean_error = (
+                    error
+                    .replace(
+                        "\t",
+                        " ",
+                    )
+                    .replace(
+                        "\n",
+                        " ",
+                    )
+                )
+
                 handle.write(
                     f"{pdb_file}\t"
-                    f"{error}\n"
+                    f"{clean_error}\n"
                 )
 
         print(
