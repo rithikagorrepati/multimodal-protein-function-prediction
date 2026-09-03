@@ -207,6 +207,7 @@ multimodal-protein-function-prediction/
 │   ├── train_structure_classifier.py
 │   └── train_multimodal_ensemble.py
 │
+├── environment.yml
 ├── .gitignore
 └── README.md
 ```
